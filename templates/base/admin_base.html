@@ -1,0 +1,19 @@
+{% extends "base/base.html" %}
+
+{% block navigation_items %}
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('manage_users') }}">Manage Users</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('manage_thrust_areas') }}">Manage Thrust Areas</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('manage_courses') }}">TES</a>
+    </li>
+    <!-- <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('assign_course') }}">Assign Course</a>
+    </li> -->
+    <li class="nav-item">
+        <a class="nav-link" href="{{ url_for('view_syllabi') }}">View Syllabi</a>
+    </li>
+{% endblock %}
