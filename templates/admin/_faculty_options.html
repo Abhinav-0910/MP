@@ -1,0 +1,9 @@
+<option value="">Select Faculty</option>
+{% for faculty in faculty_members %}
+    <option value="{{ faculty.id }}">
+        {{ faculty.name }} ({{ faculty.short_form }})
+        {% if faculty.roles|selectattr("name", "equalto", "thrust_area_admin")|list %}
+            - Current Admin
+        {% endif %}
+    </option>
+{% endfor %}

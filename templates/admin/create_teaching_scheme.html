@@ -1,0 +1,693 @@
+{% extends base_template %}
+{% block content %}
+<style>
+    // ... existing styles ...
+
+    /* Updated table responsive styles */
+    .table-responsive {
+        overflow-x: auto;
+        margin: 0 -15px;  /* Compensate for container padding */
+        padding: 0 15px;  /* Add padding back to maintain alignment */
+    }
+    
+    .table {
+        width: 100%;
+        min-width: 1200px;  /* Minimum width to ensure readability */
+        margin-bottom: 0;
+    }
+
+    /* Updated column width styles - using percentages instead of fixed widths */
+    .table .code-col { width: 8%; min-width: 100px; }
+    .table .name-col { width: 15%; min-width: 150px; }
+    .table .num-col { width: 5%; min-width: 60px; }
+    .table .weight-col { width: 7%; min-width: 80px; }
+    .table .desc-col { width: 15%; min-width: 150px; }
+    .table .area-col { width: 12%; min-width: 120px; }
+    .table .action-col { width: 12%; min-width: 120px; }
+
+    /* Make inputs and selects fit their containers better */
+    .table td input, 
+    .table td select {
+        width: 100%;
+        padding: 4px;
+        font-size: 0.875rem;
+        min-width: 0;  /* Allow inputs to shrink if needed */
+    }
+
+    /* Adjust card padding for better mobile display */
+    .card-body {
+        padding: 15px;
+    }
+
+    /* Make sure buttons in action column don't wrap awkwardly */
+    .action-buttons {
+        white-space: nowrap;
+    }
+
+    /* Responsive button sizes */
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    /* Media query for smaller screens */
+    @media (max-width: 1400px) {
+        .table td input, 
+        .table td select {
+            padding: 2px;
+            font-size: 0.8rem;
+        }
+
+        .table th,
+        .table td {
+            padding: 6px 4px;
+        }
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Course Section (shown by default) -->
+    <div id="newCourseSection">
+        <!-- Program Selection Card -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h3 class="mb-0">Teaching Scheme</h3>
+            </div>
+            <div class="card-body">
+                <form id="courseForm">
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Select Programs</label>
+                            <div class="program-selection">
+                                <!-- Program Domain Selection -->
+                                <div class="mb-3">
+                                    <label class="form-label">Select Program Domain</label>
+                                    <select class="form-select" id="programDomain" onchange="updateProgramOptions()">
+                                        <option value="">Select Domain</option>
+                                        <option value="btech">B.Tech Programs</option>
+                                        <option value="mtech">M.Tech Programs</option>
+                                        <option value="mca">MCA</option>
+                                    </select>
+                                </div>
+
+                                <!-- B.Tech Programs (initially hidden) -->
+                                <div class="program-category" id="btechPrograms" style="display: none;">
+                                    <h5>B.Tech Programs</h5>
+                                    {% for program in programs %}
+                                        {% if program.level == 'btech' %}
+                                        <div class="program-checkbox">
+                                            <input type="checkbox" class="form-check-input" 
+                                                   id="program_{{ program.id }}" 
+                                                   name="program_ids" 
+                                                   value="{{ program.id }}">
+                                            <label class="form-check-label" for="program_{{ program.id }}">
+                                                {{ program.name }} ({{ program.code }})
+                                                {% if program.specialization %} - {{ program.specialization }}{% endif %}
+                                            </label>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                
+                                <!-- M.Tech Programs (initially hidden) -->
+                                <div class="program-category" id="mtechPrograms" style="display: none;">
+                                    <h5>M.Tech Programs</h5>
+                                    {% for program in programs %}
+                                        {% if program.level == 'mtech' %}
+                                        <div class="program-checkbox">
+                                            <input type="checkbox" class="form-check-input" 
+                                                   id="program_{{ program.id }}" 
+                                                   name="program_ids" 
+                                                   value="{{ program.id }}">
+                                            <label class="form-check-label" for="program_{{ program.id }}">
+                                                {{ program.name }} ({{ program.code }})
+                                                {% if program.specialization %} - {{ program.specialization }}{% endif %}
+                                            </label>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                
+                                <!-- MCA Programs (initially hidden) -->
+                                <div class="program-category" id="mcaPrograms" style="display: none;">
+                                    <h5>MCA</h5>
+                                    {% for program in programs %}
+                                        {% if program.level == 'mca' %}
+                                        <div class="program-checkbox">
+                                            <input type="checkbox" class="form-check-input" 
+                                                   id="program_{{ program.id }}" 
+                                                   name="program_ids" 
+                                                   value="{{ program.id }}">
+                                            <label class="form-check-label" for="program_{{ program.id }}">
+                                                {{ program.name }} ({{ program.code }})
+                                            </label>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="semester" class="form-label">Semester</label>
+                            <select class="form-select" id="semester" name="semester" required>
+                                <option value="">Select Semester</option>
+                                {% for i in range(1, 9) %}
+                                <option value="{{ i }}">Semester {{ i }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="academic_year" class="form-label">Academic Year</label>
+                            <input type="text" class="form-control" id="academic_year" name="academic_year"
+                                   placeholder="e.g., 2023-24" required 
+                                   pattern="\d{4}-\d{2}" title="Format: YYYY-YY">
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Courses Table -->
+        <div class="card">
+            <div class="card-header" style="background-color: #3498db; color: white;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="mb-0">Course List</h2>
+                    <button type="button" class="btn btn-light" onclick="addNewRow()">
+                        Add New Course
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped" id="coursesTable">
+                        <thead>
+                            <tr>
+                                <th class="code-col" rowspan="2">Course Code</th>
+                                <th class="name-col" rowspan="2">Course Name</th>
+                                
+                                <th colspan="4" style="text-align: center;">Hours/Week</th>
+                                <th class="num-col" rowspan="2">SEE Hrs</th>
+                                <th colspan="3" style="text-align: center;">Components Weightage</th>
+                                <th class="desc-col" rowspan="2">Desc</th>
+                                <th class="area-col" rowspan="2">Thrust Area</th>
+                                <th class="action-col" rowspan="2">Actions</th>
+                            </tr>
+                            <tr>
+                                <th class="num-col">L</th>
+                                <th class="num-col">T</th>
+                                <th class="num-col">P</th>
+                                <th class="num-col">Cr</th>
+                                <th class="weight-col">CE: </th>
+                                <th class="weight-col">LPW: </th>
+                                <th class="weight-col">SEE: </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for course in courses %}
+                            <tr data-course-id="{{ course.id }}">
+                                <td>{{ course.code }}</td>
+                                <td>{{ course.name }}</td>
+                                <td>{{ course.lectures }}</td>
+                                <td>{{ course.tutorials }}</td>
+                                <td>{{ course.practicals }}</td>
+                                <td>{{ course.credits }}</td>
+                                <td>{{ course.see_duration }}</td>
+                                <td>{{ course.ce_weightage }}</td>
+                                <td>{{ course.lpw_weightage }}</td>
+                                <td>{{ course.see_weightage }}</td>
+                                <td>{{ course.description }}</td>
+                                <td>{{ course.thrust_area.name }}</td>
+                                <td class="action-buttons">
+                                    <button class="btn btn-sm btn-primary" onclick="modifyCourse(this)">Modify</button>
+                                    <button class="btn btn-sm btn-success" onclick="saveCourse(this)" style="display:none;">Save</button>
+                                    <button class="btn btn-sm btn-info" onclick="assignCourse({{ course.id }})">Assign</button>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteCourse({{ course.id }})">Delete</button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+function showSection(section) {
+document.getElementById('choiceSection').style.display = section === 'choice' ? 'flex' : 'none';
+document.getElementById('newCourseSection').style.display = section === 'newCourse' ? 'block' : 'none';
+document.getElementById('modifyCourseSection').style.display = section === 'modifyCourse' ? 'block' : 'none';
+
+if (section === 'modifyCourse') {
+    loadAllProgramCourses();
+}
+}
+
+function loadAllProgramCourses() {
+document.querySelectorAll('[id^="courseTable_"]').forEach(table => {
+    const programId = table.id.split('_')[1];
+    loadProgramCourses(programId, table);
+});
+}
+
+function loadProgramCourses(programId, table) {
+fetch(`/get-program-courses/${programId}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const tbody = table.querySelector('tbody');
+            tbody.innerHTML = '';
+            data.courses.forEach(course => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${course.code}</td>
+                        <td>${course.name}</td>
+                        <td>${course.credits}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary" onclick="editCourse(${course.id})">
+                                Edit
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteCourse(${course.id})">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+    })
+    .catch(error => console.error('Error loading courses:', error));
+}
+
+function addNewRow() {
+const tbody = document.querySelector('#coursesTable tbody');
+const newRow = document.createElement('tr');
+newRow.innerHTML = `
+    <td class="code-col"><input type="text" class="form-control form-control-sm" name="code" required></td>
+    <td class="name-col"><input type="text" class="form-control form-control-sm" name="name" required></td>
+    
+    <td class="num-col">
+        <select class="form-select form-select-sm" name="lectures" required>
+            <option value="2">2</option>
+            <option value="3">3</option>
+        </select>
+    </td>
+    <td class="num-col">
+        <select class="form-select form-select-sm" name="tutorials" required>
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+        </select>
+    </td>
+    <td class="num-col">
+        <select class="form-select form-select-sm" name="practicals" required>
+            <option value="2">2</option>
+            <option value="4">4</option>
+        </select>
+    </td>
+    <td class="num-col">
+        <select class="form-select form-select-sm" name="credits" required>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+        </select>
+    </td>
+    <td class="num-col"><input type="number" class="form-control form-control-sm" name="see_duration" min="1" required></td>
+    <td class="weight-col"><input type="number" class="form-control form-control-sm" name="ce_weightage" step="0.01" min="0" max="1" required></td>
+    <td class="weight-col"><input type="number" class="form-control form-control-sm" name="lpw_weightage" step="0.01" min="0" max="1" required></td>
+    <td class="weight-col"><input type="number" class="form-control form-control-sm" name="see_weightage" step="0.01" min="0" max="1" required></td>
+    <td class="desc-col"><input type="text" class="form-control form-control-sm" name="description"></td>
+    <td class="area-col">
+        <select class="form-select form-select-sm" name="thrust_area_id" required>
+            <option value="">Select</option>
+            {% for area in thrust_areas %}
+            <option value="{{ area.id }}">{{ area.name }}</option>
+            {% endfor %}
+        </select>
+    </td>
+    <td class="action-col">
+        <button class="btn btn-sm btn-success" onclick="saveCourse(this)">Save</button>
+    </td>
+`;
+tbody.appendChild(newRow);
+}
+
+async function saveCourse(btn) {
+const row = btn.closest('tr');
+
+// Validate weightages before saving
+const ce = parseFloat(row.querySelector('input[name="ce_weightage"]').value) || 0;
+const lpw = parseFloat(row.querySelector('input[name="lpw_weightage"]').value) || 0;
+const see = parseFloat(row.querySelector('input[name="see_weightage"]').value) || 0;
+
+const sum = ce + lpw + see;
+if (Math.abs(sum - 1) > 0.01) {
+    alert('The sum of CE, LPW, and SEE weightages must equal 1.0');
+    return;
+}
+
+const formData = new FormData();
+
+// Get selected programs from checkboxes
+const selectedPrograms = document.querySelectorAll('input[name="program_ids"]:checked');
+if (selectedPrograms.length === 0) {
+    alert('Please select at least one program');
+    return;
+}
+
+// Add selected programs
+selectedPrograms.forEach(checkbox => {
+    formData.append('program_ids', checkbox.value);
+});
+
+const semester = document.getElementById('semester').value;
+const academicYear = document.getElementById('academic_year').value;
+
+if (!semester || !academicYear) {
+    alert('Please select semester and academic year');
+    return;
+}
+
+formData.append('semester', semester);
+formData.append('academic_year', academicYear);
+
+// Add course details
+row.querySelectorAll('input, select').forEach(input => {
+    formData.append(input.name, input.value);
+});
+
+try {
+    const response = await fetch("{{ url_for('add_course') }}", {
+        method: 'POST',
+        body: formData
+    });
+
+    if (response.ok) {
+        const result = await response.text();
+        // Convert inputs to text
+        row.querySelectorAll('input, select').forEach(input => {
+            const cell = input.parentElement;
+            if (input.tagName === 'SELECT') {
+                cell.textContent = input.options[input.selectedIndex].text;
+            } else {
+                cell.textContent = input.value;
+            }
+        });
+
+        // Update buttons
+        const buttonsCell = row.querySelector('td:last-child');
+        buttonsCell.innerHTML = `
+            <button class="btn btn-sm btn-primary" onclick="modifyCourse(this)">Modify</button>
+            <button class="btn btn-sm btn-success" onclick="saveCourse(this)" style="display:none;">Save</button>
+            <button class="btn btn-sm btn-info" onclick="assignCourse('${result}')">Assign</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteCourse('${result}')">Delete</button>
+        `;
+
+        // Add course ID to the row
+        row.dataset.courseId = result;
+
+        alert('Course saved successfully!');
+    } else {
+        alert('Error saving course');
+    }
+} catch (error) {
+    alert('Error saving course: ' + error);
+}
+}
+
+function modifyCourse(btn) {
+const row = btn.closest('tr');
+const cells = row.cells;
+
+// Convert text to inputs/selects
+for (let i = 0; i < cells.length - 1; i++) {
+    const cell = cells[i];
+    const value = cell.textContent.trim();
+    
+    if (i === 2) { // Thrust Area cell
+        cell.innerHTML = `
+            <select class="form-select form-select-sm" name="thrust_area_id" required>
+                <option value="">Select</option>
+                {% for area in thrust_areas %}
+                <option value="{{ area.id }}" ${value === "{{ area.name }}" ? 'selected' : ''}>
+                    {{ area.name }}
+                </option>
+                {% endfor %}
+            </select>
+        `;
+    } else if (i === 3) { // L
+        cell.innerHTML = `
+            <select class="form-select form-select-sm" name="lectures" required>
+                <option value="2" ${value === "2" ? 'selected' : ''}>2</option>
+                <option value="3" ${value === "3" ? 'selected' : ''}>3</option>
+            </select>`;
+    } else if (i === 4) { // T
+        cell.innerHTML = `
+            <select class="form-select form-select-sm" name="tutorials" required>
+                <option value="0" ${value === "0" ? 'selected' : ''}>0</option>
+                <option value="1" ${value === "1" ? 'selected' : ''}>1</option>
+                <option value="2" ${value === "2" ? 'selected' : ''}>2</option>
+            </select>`;
+    } else if (i === 5) { // P
+        cell.innerHTML = `
+            <select class="form-select form-select-sm" name="practicals" required>
+                <option value="2" ${value === "2" ? 'selected' : ''}>2</option>
+                <option value="4" ${value === "4" ? 'selected' : ''}>4</option>
+            </select>`;
+    } else if (i === 6) { // C
+        cell.innerHTML = `
+            <select class="form-select form-select-sm" name="credits" required>
+                <option value="2" ${value === "2" ? 'selected' : ''}>2</option>
+                <option value="3" ${value === "3" ? 'selected' : ''}>3</option>
+                <option value="4" ${value === "4" ? 'selected' : ''}>4</option>
+            </select>`;
+    } else if (i >= 8 && i <= 10) { // Weightages
+        cell.innerHTML = `<input type="number" class="form-control form-control-sm" 
+                               name="${getFieldName(i)}" value="${value}" 
+                               step="0.01" min="0" max="1">`;
+    } else {
+        cell.innerHTML = `<input type="text" class="form-control form-control-sm" 
+                               name="${getFieldName(i)}" value="${value}">`;
+    }
+}
+
+// Toggle buttons
+btn.style.display = 'none';
+row.querySelector('button.btn-success').style.display = 'inline-block';
+row.querySelector('button.btn-info').style.display = 'none';
+row.querySelector('button.btn-danger').style.display = 'none';
+}
+
+async function deleteCourse(courseId) {
+if (!confirm('Are you sure you want to delete this course? This action cannot be undone.')) {
+    return;
+}
+
+try {
+    const response = await fetch(`{{ url_for('delete_course', course_id=0) }}`.replace('0', courseId), {
+        method: 'DELETE'
+    });
+
+    if (response.ok) {
+        const row = document.querySelector(`tr[data-course-id="${courseId}"]`);
+        row.remove();
+        alert('Course deleted successfully!');
+    } else {
+        const error = await response.text();
+        alert('Error deleting course: ' + error);
+    }
+} catch (error) {
+    alert('Error deleting course: ' + error);
+}
+}
+
+function assignCourse(courseId) {
+const selectedPrograms = document.querySelectorAll('input[name="program_ids"]:checked');
+const semester = document.getElementById('semester').value;
+const academicYear = document.getElementById('academic_year').value;
+
+if (selectedPrograms.length === 0 || !semester || !academicYear) {
+    alert('Please select programs, semester, and academic year first');
+    return;
+}
+
+const url = new URL("{{ url_for('assign_course') }}", window.location.origin);
+url.searchParams.append('course_id', courseId);
+url.searchParams.append('semester', semester);
+url.searchParams.append('academic_year', academicYear);
+
+selectedPrograms.forEach(checkbox => {
+    url.searchParams.append('program_ids', checkbox.value);
+});
+
+window.location.href = url.toString();
+}
+
+function getFieldName(index) {
+const fields = [
+    'code', 'name', 'thrust_area_id', 'semester', 'lectures', 
+    'tutorials', 'practicals', 'credits', 'see_duration',
+    'ce_weightage', 'lpw_weightage', 'see_weightage', 'description'
+];
+return fields[index];
+}
+
+async function editCourse(courseId) {
+try {
+    const response = await fetch(`/get-course-details/${courseId}`);
+    const data = await response.json();
+    
+    if (data.success) {
+        const course = data.course;
+        const row = document.querySelector(`tr[data-course-id="${courseId}"]`);
+        
+        row.innerHTML = `
+            <td><input type="text" class="form-control form-control-sm" name="code" value="${course.code}" required></td>
+            <td><input type="text" class="form-control form-control-sm" name="name" value="${course.name}" required></td>
+            <td>
+                <select class="form-select form-select-sm" name="thrust_area_id" required>
+                    <option value="">Select</option>
+                    {% for area in thrust_areas %}
+                    <option value="{{ area.id }}" ${course.thrust_area_id == {{ area.id }} ? 'selected' : ''}>
+                        {{ area.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td><input type="number" class="form-control form-control-sm" name="lectures" value="${course.lectures}" min="0" required></td>
+            <td><input type="number" class="form-control form-control-sm" name="tutorials" value="${course.tutorials}" min="0" required></td>
+            <td><input type="number" class="form-control form-control-sm" name="practicals" value="${course.practicals}" min="0" required></td>
+            <td><input type="number" class="form-control form-control-sm" name="credits" value="${course.credits}" min="1" required></td>
+            <td><input type="number" class="form-control form-control-sm" name="see_duration" value="${course.see_duration}" min="1" required></td>
+            <td><input type="number" class="form-control form-control-sm" name="ce_weightage" value="${course.ce_weightage}" step="0.01" min="0" max="1" required></td>
+            <td><input type="number" class="form-control form-control-sm" name="lpw_weightage" value="${course.lpw_weightage}" step="0.01" min="0" max="1" required></td>
+            <td><input type="number" class="form-control form-control-sm" name="see_weightage" value="${course.see_weightage}" step="0.01" min="0" max="1" required></td>
+            <td><input type="text" class="form-control form-control-sm" name="description" value="${course.description || ''}"></td>
+            <td>
+                <button class="btn btn-sm btn-success" onclick="updateCourse(${courseId}, this)">Save</button>
+                <button class="btn btn-sm btn-secondary" onclick="cancelEdit(${courseId}, this)">Cancel</button>
+            </td>
+        `;
+    }
+} catch (error) {
+    console.error('Error fetching course details:', error);
+    alert('Error loading course details');
+}
+}
+
+async function updateCourse(courseId, btn) {
+const row = btn.closest('tr');
+
+// Validate weightages
+const ce = parseFloat(row.querySelector('input[name="ce_weightage"]').value) || 0;
+const lpw = parseFloat(row.querySelector('input[name="lpw_weightage"]').value) || 0;
+const see = parseFloat(row.querySelector('input[name="see_weightage"]').value) || 0;
+
+if (Math.abs(ce + lpw + see - 1) > 0.01) {
+    alert('The sum of CE, LPW, and SEE weightages must equal 1.0');
+    return;
+}
+
+// Collect form data
+const formData = new FormData();
+row.querySelectorAll('input, select').forEach(input => {
+    formData.append(input.name, input.value);
+});
+
+try {
+    const response = await fetch(`/update-course/${courseId}`, {
+        method: 'POST',
+        body: formData
+    });
+
+    if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+            // Update row with new values
+            row.innerHTML = `
+                <td>${data.course.code}</td>
+                <td>${data.course.name}</td>
+                <td>${data.course.thrust_area}</td>
+                <td>${data.course.lectures}</td>
+                <td>${data.course.tutorials}</td>
+                <td>${data.course.practicals}</td>
+                <td>${data.course.credits}</td>
+                <td>${data.course.see_duration}</td>
+                <td>${data.course.ce_weightage}</td>
+                <td>${data.course.lpw_weightage}</td>
+                <td>${data.course.see_weightage}</td>
+                <td>${data.course.description || ''}</td>
+                <td>
+                    <button class="btn btn-sm btn-primary" onclick="editCourse(${courseId})">Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteCourse(${courseId})">Delete</button>
+                </td>
+            `;
+            alert('Course updated successfully!');
+        }
+    } else {
+        alert('Error updating course');
+    }
+} catch (error) {
+    console.error('Error updating course:', error);
+    alert('Error updating course');
+}
+}
+
+async function cancelEdit(courseId, btn) {
+try {
+    const response = await fetch(`/get-course-details/${courseId}`);
+    const data = await response.json();
+    
+    if (data.success) {
+        const course = data.course;
+        const row = btn.closest('tr');
+        
+        // Restore original values
+        row.innerHTML = `
+            <td>${course.code}</td>
+            <td>${course.name}</td>
+            <td>${course.thrust_area}</td>
+            <td>${course.lectures}</td>
+            <td>${course.tutorials}</td>
+            <td>${course.practicals}</td>
+            <td>${course.credits}</td>
+            <td>${course.see_duration}</td>
+            <td>${course.ce_weightage}</td>
+            <td>${course.lpw_weightage}</td>
+            <td>${course.see_weightage}</td>
+            <td>${course.description || ''}</td>
+            <td>
+                <button class="btn btn-sm btn-primary" onclick="editCourse(${courseId})">Edit</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteCourse(${courseId})">Delete</button>
+            </td>
+        `;
+    }
+} catch (error) {
+    console.error('Error canceling edit:', error);
+    alert('Error canceling edit');
+}
+}
+
+function updateProgramOptions() {
+    // Hide all program sections first
+    document.getElementById('btechPrograms').style.display = 'none';
+    document.getElementById('mtechPrograms').style.display = 'none';
+    document.getElementById('mcaPrograms').style.display = 'none';
+    
+    // Uncheck all checkboxes
+    document.querySelectorAll('input[name="program_ids"]').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    
+    // Show selected domain's programs
+    const selectedDomain = document.getElementById('programDomain').value;
+    if (selectedDomain) {
+        document.getElementById(selectedDomain + 'Programs').style.display = 'block';
+    }
+}
+</script>
+{% endblock %}

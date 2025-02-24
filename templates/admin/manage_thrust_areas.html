@@ -1,0 +1,179 @@
+{% extends base_template %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header" style="background-color: #3498db; color: white;">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">Thrust Area Management</h2>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <!-- Thrust Areas List -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h3 class="card-title mb-0">Current Thrust Areas</h3>
+                        </div>
+                        <div class="card-body">
+                            {% for area in thrust_areas %}
+                                <div class="border-start border-4 border-primary ps-3 py-2 mb-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h4 class="fw-semibold mb-1">{{ area.name }}</h4>
+                                            {% if area.admins %}
+                                                <p class="text-muted small mb-0">
+                                                    Admin: {% for admin in area.admins %}
+                                                        {{ admin.name }}{% if not loop.last %}, {% endif %}
+                                                    {% endfor %}
+                                                </p>
+                                            {% else %}
+                                                <p class="text-muted small mb-0">No admin assigned</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="card-footer text-end">
+                            <a href="{{ url_for('add_thrust_area') }}" class="btn btn-success btn-sm">
+                                <i class="fas fa-plus"></i> Add Thrust Area
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assign Thrust Area Admin -->
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            <h3 class="card-title mb-0">Assign Thrust Area Admin</h3>
+                        </div>
+                        <div class="card-body">
+                            <form id="assignAdminForm" class="assign-admin-form" method="POST" action="{{ url_for('assign_thrust_admin') }}">
+                                <div class="mb-3">
+                                    <label class="form-label">Thrust Area</label>
+                                    <select name="thrust_area_id" class="form-select" required id="thrustAreaSelect">
+                                        <option value="">Select Thrust Area</option>
+                                        {% for area in thrust_areas %}
+                                            <option value="{{ area.id }}">{{ area.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Faculty</label>
+                                    <select name="faculty_id" class="form-select" required id="facultySelect" disabled>
+                                        <option value="">Select Thrust Area First</option>
+                                    </select>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary w-100">
+                                    Assign Admin
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Admin Replacement</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmationMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmReplace">Replace</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block styles %}
+<style>
+    .border-4 {
+        border-width: 4px !important;
+    }
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .card-header {
+        background-color: rgba(0, 0, 0, 0.03);
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const thrustAreaSelect = document.getElementById('thrustAreaSelect');
+        const facultySelect = document.getElementById('facultySelect');
+        const assignForm = document.getElementById('assignAdminForm');
+        const confirmationModal = new bootstrap.Modal(document.getElementById('confirmationModal'));
+        let formToSubmit = null;
+    
+        // Handle thrust area selection change
+        thrustAreaSelect.addEventListener('change', function() {
+            const selectedAreaId = this.value;
+            
+            if (!selectedAreaId) {
+                facultySelect.innerHTML = '<option value="">Select Thrust Area First</option>';
+                facultySelect.disabled = true;
+                return;
+            }
+    
+            // Fetch faculty members for selected thrust area
+            fetch(`/get-faculty-for-thrust/${selectedAreaId}`)
+                .then(response => response.text())
+                .then(html => {
+                    facultySelect.innerHTML = html;
+                    facultySelect.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    facultySelect.innerHTML = '<option value="">Error loading faculty members</option>';
+                });
+        });
+    
+        // Handle form submission
+        assignForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const thrustArea = thrustAreaSelect.options[thrustAreaSelect.selectedIndex].text;
+            const faculty = facultySelect.options[facultySelect.selectedIndex].text;
+            
+            // Check if there's an existing admin
+            const currentAdmin = document.querySelector(`[data-thrust-area="${thrustArea}"] .admin-name`);
+            
+            if (currentAdmin && currentAdmin.textContent.trim()) {
+                const message = `This will remove ${currentAdmin.textContent} as the admin of ${thrustArea} and assign ${faculty} instead. Do you want to continue?`;
+                document.getElementById('confirmationMessage').textContent = message;
+                formToSubmit = this;
+                confirmationModal.show();
+            } else {
+                this.submit();
+            }
+        });
+    
+        // Handle confirmation
+        document.getElementById('confirmReplace').addEventListener('click', function() {
+            if (formToSubmit) {
+                confirmationModal.hide();
+                formToSubmit.submit();
+            }
+        });
+    });
+    </script>
+{% endblock %}

@@ -1,0 +1,171 @@
+{% extends base_template %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow p-4" style="border-radius: 15px;">
+                <h2 class="mb-4 text-center">Assign Course</h2>
+                
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                <form method="POST" id="assignCourseForm">
+                    <!-- Program Information (Read-only) -->
+                    <div class="mb-4">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title">Program Details</h5>
+                                <p class="mb-1"><strong>Programs:</strong>
+                                    {% for program_id in selected_program_ids %}
+                                        {% for program in programs %}
+                                            {% if program.id|string == program_id %}
+                                                {{ program.name }} ({{ program.code }})
+                                                {% if not loop.last %}, {% endif %}
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endfor %}
+                                </p>
+                                <p class="mb-1"><strong>Semester:</strong> {{ selected_semester }}</p>
+                                <p class="mb-0"><strong>Academic Year:</strong> {{ selected_academic_year }}</p>
+                                
+                                {% for program_id in selected_program_ids %}
+                                <input type="hidden" name="program_ids" value="{{ program_id }}">
+                                {% endfor %}
+                                <input type="hidden" name="semester" value="{{ selected_semester }}">
+                                <input type="hidden" name="academic_year" value="{{ selected_academic_year }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Course Information (Read-only) -->
+                    {% if course %}
+                    <div class="mb-4">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title">Course Details</h5>
+                                <p class="mb-1"><strong>Code:</strong> {{ course.code }}</p>
+                                <p class="mb-1"><strong>Name:</strong> {{ course.name }}</p>
+                                <p class="mb-1"><strong>Thrust Area:</strong> {{ course.thrust_area.name }}</p>
+                                <p class="mb-0"><strong>Credits:</strong> {{ course.credits }}</p>
+                                <input type="hidden" name="course_id" value="{{ course.id }}">
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    
+
+                    <!-- Assignment Type -->
+                    <div class="mb-4">
+                        <label class="form-label">Assignment Type:</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="assignment_type" 
+                                   value="direct" id="directAssignment" checked>
+                            <label class="form-check-label" for="directAssignment">
+                                Direct Assignment to Faculty
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="assignment_type" 
+                                   value="through_admin" id="throughAdmin">
+                            <label class="form-check-label" for="throughAdmin">
+                                Through Thrust Area Admin
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Thrust Area Details (initially hidden) -->
+                    {% if course %}
+                    <div id="thrustAreaDetails" class="mb-4" style="display: none;">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h5 class="card-title">Thrust Area Details</h5>
+                                <p class="mb-1"><strong>Thrust Area:</strong> {{ course.thrust_area.name }}</p>
+                                <p class="mb-0"><strong>Thrust Area Admin:</strong> {{ thrust_area_admin.name }}</p>
+                                <input type="hidden" name="thrust_area_admin_id" value="{{ thrust_area_admin.id }}">
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Faculty Selection -->
+                    <div id="facultySection" class="mb-4">
+                        <label class="form-label">Select Faculty:</label>
+                        <div class="faculty-checkbox-container">
+                            {% for faculty in faculties %}
+                                {% if course %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" 
+                                               name="faculty_ids[]" value="{{ faculty.id }}" 
+                                               id="faculty{{ faculty.id }}">
+                                        <label class="form-check-label" for="faculty{{ faculty.id }}">
+                                            {{ faculty.name }}
+                                        </label>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Thrust Area Admin Selection (initially hidden) -->
+                    <div id="adminSection" class="mb-4" style="display: none;">
+                        <label class="form-label">Thrust Area Admin:</label>
+                        <input type="text" class="form-control" value="{{ thrust_area_admin.name }}" readonly>
+                        <input type="hidden" name="thrust_area_admin_id" value="{{ thrust_area_admin.id }}">
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">Assign Course</button>
+                        <a href="{{ url_for('manage_courses') }}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const assignmentTypeInputs = document.querySelectorAll('input[name="assignment_type"]');
+        const facultySection = document.getElementById('facultySection');
+        const adminSection = document.getElementById('adminSection');
+        const thrustAreaDetails = document.getElementById('thrustAreaDetails');
+        const facultyCheckboxes = document.querySelectorAll('input[name="faculty_ids[]"]');
+
+        function toggleSections(type) {
+            if (type === 'direct') {
+                facultySection.style.display = 'block';
+                adminSection.style.display = 'none';
+                thrustAreaDetails.style.display = 'none';
+                facultyCheckboxes.forEach(checkbox => {
+                    checkbox.required = true;
+                });
+            } else {
+                facultySection.style.display = 'none';
+                adminSection.style.display = 'block';
+                thrustAreaDetails.style.display = 'block';
+                facultyCheckboxes.forEach(checkbox => {
+                    checkbox.required = false;
+                });
+            }
+        }
+    
+        assignmentTypeInputs.forEach(input => {
+            input.addEventListener('change', (e) => {
+                toggleSections(e.target.value);
+            });
+        });
+    
+        // Initial setup
+        const initialType = document.querySelector('input[name="assignment_type"]:checked').value;
+        toggleSections(initialType);
+    });
+    
+    </script>
+{% endblock %}
