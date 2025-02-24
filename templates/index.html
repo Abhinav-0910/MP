@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Syllabus Form</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 p-4 text-white">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">Nirma University - Syllabus Management</h1>
+            <div class="flex items-center space-x-4">
+                <span id="userRole" class="text-sm"></span>
+                <a href="/logout" class="bg-blue-700 px-4 py-2 rounded hover:bg-blue-800">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <form id="syllabusForm" class="bg-white shadow-lg rounded-lg p-6 space-y-6" onsubmit=validateHours(event)>
+            <!-- ... existing code ... -->
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Basic Information -->
+              <div class="col-span-2">
+                  <h2 class="text-xl font-bold mb-4 text-gray-700">Basic Information</h2>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700">Program Name</label>
+                          <input type="text" name="program1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                      </div>
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700">Course Title</label>
+                          <input type="text" name="ct1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                      </div>
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700">Course Type</label>
+                          <input type="text" name="ct2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- Course Structure -->
+              <div class="col-span-2">
+                  <h2 class="text-xl font-bold mb-4 text-gray-700">Course Structure</h2>
+                  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700">Lectures (L)</label>
+                          <input type="number" name="Lec" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                      </div>
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700">Tutorials (T)</label>
+                          <input type="number" name="tute" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                      </div>
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700">Lab (LPW)</label>
+                          <input type="number" name="LPW" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                      </div>
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700">Credits (CE)</label>
+                          <input type="number" name="CE" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                      </div>
+                  </div>
+              </div>
+
+              <!-- Course Learning Outcomes -->
+              <div class="col-span-2">
+                  <h2 class="text-xl font-bold mb-4 text-gray-700">Course Learning Outcomes (CLOs)</h2>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700">CLO 1</label>
+                          <input type="text" name="clo1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                      </div>
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700">CLO 2</label>
+                          <input type="text" name="clo2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                      </div>
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700">CLO 3</label>
+                          <input type="text" name="clo3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                      </div>
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700">CLO 4</label>
+                          <input type="text" name="clo4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                      </div>
+                  </div>
+              </div>
+
+              <!-- Units and Teaching Hours -->
+              <div class="col-span-2">
+                  <h2 class="text-xl font-bold mb-4 text-gray-700">Units and Teaching Hours</h2>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700">Unit 1</label>
+                          <input type="text" name="U1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                          <label class="block text-sm font-medium text-gray-700">Content 1</label>
+                          <input type="text" name="C1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                          <label class="block text-sm font-medium text-gray-700">Unit 1 Hours</label>
+                          <input type="number" name="T1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                      </div>
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700">Unit 2</label>
+                          <input type="text" name="U2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                          <label class="block text-sm font-medium text-gray-700">Content 2</label>
+                          <input type="text" name="C2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                          <label class="block text-sm font-medium text-gray-700">Unit 2 Hours</label>
+                          <input type="number" name="T2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                      </div>
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700">Unit 3</label>
+                          <input type="text" name="U3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                          <label class="block text-sm font-medium text-gray-700">Content 3</label>
+                          <input type="text" name="C3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                          <label class="block text-sm font-medium text-gray-700">Unit 3 Hours</label>
+                          <input type="number" name="T3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                      </div>
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700">Unit 4</label>
+                          <input type="text" name="U4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                          <label class="block text-sm font-medium text-gray-700">Content 4</label>
+                          <input type="text" name="C4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                          <label class="block text-sm font-medium text-gray-700">Unit 4 Hours</label>
+                          <input type="number" name="T4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                      </div>
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700">Unit 5</label>
+                          <input type="text" name="U5" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                          <label class="block text-sm font-medium text-gray-700">Content 5</label>
+                          <input type="text" name="C5" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                          <label class="block text-sm font-medium text-gray-700">Unit 5 Hours</label>
+                          <input type="number" name="T5" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                      </div>
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700">Unit 6</label>
+                          <input type="text" name="U6" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                          <label class="block text-sm font-medium text-gray-700">Content 6</label>
+                          <input type="text" name="C6" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                          <label class="block text-sm font-medium text-gray-700">Unit 6 Hours</label>
+                          <input type="number" name="T6" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                      </div>
+                  </div>
+              </div>
+
+              <!-- Suggested Readings -->
+              <div class="col-span-2">
+                  <h2 class="text-xl font-bold mb-4 text-gray-700">Suggested Readings</h2>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700">Author Name 1</label>
+                          <input type="text" name="Author_names1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                          <label class="block text-sm font-medium text-gray-700">Book Name 1</label>
+                          <input type="text" name="Name_of_Book1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                          <label class="block text-sm font-medium text-gray-700">Publisher 1</label>
+                          <input type="text" name="Publisher_Name1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" required>
+                      </div>
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700">Author Name 2</label>
+                          <input type="text" name="Author_names2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                          <label class="block text-sm font-medium text-gray-700">Book Name 2</label>
+                          <input type="text" name="Name_of_Book2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                          <label class="block text-sm font-medium text-gray-700">Publisher 2</label>
+                          <input type="text" name="Publisher_Name2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                      </div>
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700">Author Name 3</label>
+                          <input type="text" name="Author_names3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                          <label class="block text-sm font-medium text-gray-700">Book Name 3</label>
+                          <input type="text" name="Name_of_Book3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                          <label class="block text-sm font-medium text-gray-700">Publisher 3</label>
+                          <input type="text" name="Publisher_Name3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                      </div>
+                      <div>
+                          <label class="block text-sm font-medium text-gray-700">Author Name 4</label>
+                          <input type="text" name="Author_names4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                          <label class="block text-sm font-medium text-gray-700">Book Name 4</label>
+                          <input type="text" name="Name_of_Book4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                          <label class="block text-sm font-medium text-gray-700">Publisher 4</label>
+                          <input type="text" name="Publisher_Name4" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+            <div class="flex justify-end space-x-4 mt-6">
+                <button type="button" onclick="previewSyllabus()" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">Preview</button>
+            </div>
+        </form>
+
+        <!-- Preview Modal -->
+        <div id="previewModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto">
+          <div class="bg-white rounded-lg p-8 max-w-4xl mx-auto my-8">
+              <div class="flex justify-between items-center mb-4">
+                  <h2 class="text-2xl font-bold">Preview Syllabus</h2>
+                  <button onclick="closePreview()" class="text-gray-500 hover:text-gray-700">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                      </svg>
+                  </button>
+              </div>
+              <div id="previewContent" class="max-h-[70vh] overflow-y-auto bg-white p-6 rounded shadow">
+                <iframe id="docPreview" width="100%" height="500px"></iframe>
+            </div>
+            
+            
+            
+              <div class="flex justify-end space-x-4 mt-6">
+                  <button onclick="lockSyllabus()" class="bg-green-500 text-white px-6 py-2 rounded hover:bg-green-600">Lock & Save</button>
+                  <button onclick="closePreview()" class="bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600">Edit</button>
+              </div>
+          </div>
+      </div>
+
+        <!-- Download Options -->
+        <div id="downloadOptions" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden">
+            <div class="bg-white rounded-lg p-8 max-w-md mx-auto mt-20">
+                <h2 class="text-2xl font-bold mb-4">Download Options</h2>
+                <div class="space-y-4">
+                    <button onclick="downloadFile('word')" class="w-full bg-blue-500 text-white px-6 py-3 rounded hover:bg-blue-600">Download as Word</button>
+                    <button onclick="downloadFile('pdf')" class="w-full bg-green-500 text-white px-6 py-3 rounded hover:bg-green-600">Download as PDF</button>
+                </div>
+                <button onclick="closeDownloadOptions()" class="w-full mt-4 bg-gray-500 text-white px-6 py-2 rounded hover:bg-gray-600">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Show user role
+        document.getElementById('userRole').textContent = `Role: ${sessionStorage.getItem('userRole') || 'Faculty'}`;
+
+        function previewSyllabus() {
+            const formData = new FormData(document.getElementById('syllabusForm'));
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+        
+            fetch('/preview-syllabus-docx', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                
+                // Use Google Docs Viewer to display the Word file inside the modal
+                const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(data.preview_url)}&embedded=true`;
+                document.getElementById('docPreview').src = viewerUrl;
+        
+                // Show the modal with the embedded viewer
+                document.getElementById('previewModal').classList.remove('hidden');
+            })
+            .catch(error => {
+                console.error('Preview error:', error);
+                alert('Error generating preview: ' + error.message);
+            });
+        }
+        
+        
+
+    function closePreview() {
+        document.getElementById('previewModal').classList.add('hidden');
+    }
+
+    function lockSyllabus() {
+        // Save to database
+        // Show download options
+        closePreview();
+        document.getElementById('downloadOptions').classList.remove('hidden');
+    }
+
+    function closeDownloadOptions() {
+        document.getElementById('downloadOptions').classList.add('hidden');
+    }
+
+    function downloadFile(type) {
+        const formData = {};
+        document.querySelectorAll('input').forEach(input => formData[input.name] = input.value);
+        
+        fetch(`/generate-${type}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData),
+        })
+        .then(response => response.blob())
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `syllabus.${type === 'word' ? 'docx' : 'pdf'}`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        });
+    }
+    function validateHours(event) {
+      const t1 = parseInt(document.getElementById('T1').value) || 0;
+      const t2 = parseInt(document.getElementById('T2').value) || 0;
+      const t3 = parseInt(document.getElementById('T3').value) || 0;
+      const t4 = parseInt(document.getElementById('T4').value) || 0;
+      const t5 = parseInt(document.getElementById('T5').value) || 0;
+      const t6 = parseInt(document.getElementById('T6').value) || 0;
+
+      const totalHours = t1 + t2 + t3 + t4 + t5 + t6;
+
+      if (totalHours < 30 || totalHours > 45) {
+          alert("Total teaching hours must be between 30 and 45.");
+          event.preventDefault(); // Prevent form submission
+      }
+  }
+    </script>
+</body>
+</html>

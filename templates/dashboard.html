@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Syllabus Management System</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 p-4 text-white">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold">Nirma University - Syllabus Management</h1>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm">Welcome, {{ username }}</span>
+                <span class="text-sm bg-blue-700 px-2 py-1 rounded">
+                    {% for role in roles %}
+                        {{ role }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </span>
+                <a href="/logout" class="bg-blue-700 px-4 py-2 rounded hover:bg-blue-800">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="mb-4 p-4 rounded {% if category == 'error' %}bg-red-100 text-red-700 border-red-400{% else %}bg-green-100 text-green-700 border-green-400{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% if 'admin' in roles %}
+                <a href="/manage-users" class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                    <h2 class="text-xl font-bold mb-2">Manage Users</h2>
+                    <p class="text-gray-600">Add, edit, or remove user accounts</p>
+                </a>
+                <a href="/manage-thrust-areas" class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                    <h2 class="text-xl font-bold mb-2">Manage Thrust Areas</h2>
+                    <p class="text-gray-600">Manage thrust areas and their admins</p>
+                </a>
+                <a href="/manage-courses" class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                    <h2 class="text-xl font-bold mb-2">Teaching Scheme</h2>
+                    <p class="text-gray-600">Add and manage course listings</p>
+                </a>
+                <!-- <a href="/assign-course" class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                    <h2 class="text-xl font-bold mb-2">Assign Courses</h2>
+                    <p class="text-gray-600">Assign courses to thrust areas and faculty</p>
+                </a> -->
+                <a href="/view-syllabi" class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                    <h2 class="text-xl font-bold mb-2">View All Syllabi</h2>
+                    <p class="text-gray-600">Review all submitted syllabi</p>
+                </a>
+            {% endif %}
+
+            {% if 'thrust_area_admin' in roles %}
+                <div class="col-span-2 bg-white p-6 rounded-lg shadow-lg">
+                    <h2 class="text-xl font-bold mb-4">Your Thrust Areas</h2>
+                    {% if admin_areas %}
+                        <div class="space-y-4">
+                            {% for area in admin_areas %}
+                                <div class="border-l-4 border-blue-500 pl-4">
+                                    <h3 class="font-semibold">{{ area.name }}</h3>
+                                    <p class="text-sm text-gray-600">
+                                        {{ area.courses|length }} courses assigned
+                                    </p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-gray-600">No thrust areas assigned yet.</p>
+                    {% endif %}
+                </div>
+                <a href="/view-syllabi" class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                    <h2 class="text-xl font-bold mb-2">View Area Syllabi</h2>
+                    <p class="text-gray-600">Review syllabi for your thrust areas</p>
+                </a>
+            {% endif %}
+
+            {% if 'faculty' in roles %}
+                <a href="/syllabus-form" class="bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow">
+                    <h2 class="text-xl font-bold mb-2">Create New Syllabus</h2>
+                    <p class="text-gray-600">Create and submit a new course syllabus</p>
+                </a>
+                {% if assignments %}
+                    <div class="col-span-2 bg-white p-6 rounded-lg shadow-lg">
+                        <h2 class="text-xl font-bold mb-4">Your Assigned Courses</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {% for assignment in assignments %}
+                                <div class="border p-4 rounded-lg">
+                                    <h3 class="font-semibold">{{ assignment.course.code }} - {{ assignment.course.name }}</h3>
+                                    <p class="text-sm text-gray-600">{{ assignment.semester }} {{ assignment.academic_year }}</p>
+                                    <p class="text-sm text-gray-600">Thrust Area: {{ assignment.course.thrust_area.name }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
